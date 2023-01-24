@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, languages } from "vscode";
+import { commands, ExtensionContext } from "vscode";
 import { Builder } from "./builder";
 import {
   COMMAND_BUILD,
@@ -33,17 +33,6 @@ export function activate(extContext: ExtensionContext): void {
 
   const languageServer = new LanguageServer(context);
   extContext.subscriptions.push(languageServer);
-
-  const languagesSupported = ["satysfi"];
-  const formatter = languages.registerDocumentFormattingEditProvider(
-    languagesSupported.map((language) => ({ language, scheme: "file" })),
-    {
-      async provideDocumentFormattingEdits(document, options) {
-        return await languageServer.format(document, options);
-      },
-    },
-  );
-  extContext.subscriptions.push(formatter);
 
   commands.registerCommand(COMMAND_BUILD, () => builder.buildProject());
   commands.registerCommand(COMMAND_TYPECHECK, () => typeChecker.checkCurrentDocument());

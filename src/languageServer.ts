@@ -1,4 +1,11 @@
-import { Disposable, FormattingOptions, TextDocument, TextEdit, workspace } from "vscode";
+import {
+  Disposable,
+  FormattingOptions,
+  languages,
+  TextDocument,
+  TextEdit,
+  workspace,
+} from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 import { Context } from "./extension";
 import { Logger } from "./logger";
@@ -17,6 +24,10 @@ export class LanguageServer implements Disposable {
     const config = getConfig();
     this.enabled = config.languageServer.enabled;
     this.path = config.languageServer.path;
+
+    const languagesSupported = ["satysfi"];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
 
     this.disposables.push(
       workspace.onDidChangeConfiguration(() => {
@@ -39,6 +50,14 @@ export class LanguageServer implements Disposable {
           this.enabled = config.languageServer.enabled;
         }
       }),
+      languages.registerDocumentFormattingEditProvider(
+        languagesSupported.map((language) => ({ language, scheme: "file" })),
+        {
+          async provideDocumentFormattingEdits(document, options) {
+            return await self.format(document, options);
+          },
+        },
+      ),
     );
 
     if (this.enabled) this.startServer();

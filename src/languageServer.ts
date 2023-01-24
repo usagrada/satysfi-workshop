@@ -1,4 +1,4 @@
-import { Disposable, workspace } from "vscode";
+import { Disposable, FormattingOptions, TextDocument, TextEdit, workspace } from "vscode";
 import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 import { Context } from "./extension";
 import { Logger } from "./logger";
@@ -78,6 +78,14 @@ export class LanguageServer implements Disposable {
   public async restartServer() {
     await this.stopServer();
     return this.startServer();
+  }
+
+  public async format(document: TextDocument, options: FormattingOptions): Promise<TextEdit[]> {
+    if (!this.client) return [];
+    return await this.client.sendRequest("textDocument/formatting", {
+      textDocument: { uri: document.uri.toString() },
+      options,
+    });
   }
 
   public dispose(): void {
